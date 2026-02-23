@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>AmTrust E&amp;S — Active Shooter Risk Platform</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#001a3a;font-family:Arial,'Helvetica Neue',sans-serif;color:#fff}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    select option{background:#002855;color:white}
+    input::placeholder{color:rgba(255,255,255,0.22)}
+    button{font-family:Arial,sans-serif}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState}=React;
+const B={navy:"#002855",navyDark:"#001a3a",navyMid:"#012f63",gold:"#C8960C",goldPale:"rgba(200,150,12,0.12)",white:"#ffffff",slate:"#4a6080",slateLight:"#7a93ad",border:"rgba(255,255,255,0.1)",borderGold:"rgba(200,150,12,0.35)",red:"#c0392b",redPale:"rgba(192,57,43,0.12)",redBorder:"rgba(192,57,43,0.4)",green:"#27ae60"};
+const GIF={CA:"A",NJ:"A",MA:"A+",CT:"A",NY:"A-",IL:"A-",HI:"A-",MD:"A-",WA:"B+",CO:"B",DE:"B",OR:"B-",RI:"B-",MN:"B-",NM:"C+",MI:"C+",NV:"C",ME:"C+",VA:"C",AK:"C-",PA:"C-",WI:"C-",OH:"C-",NC:"D+",TX:"D+",GA:"D",FL:"D",AZ:"D",IN:"D",UT:"D",SC:"D",TN:"D-",KY:"D-",IA:"D-",KS:"D-",NE:"D-",ID:"D-",ND:"D-",SD:"D-",MT:"D-",WY:"F",LA:"F",AL:"F",MS:"F",AR:"F",OK:"F",MO:"F",WV:"F",NH:"D",VT:"C-"};
+const GMULT={"A+":0.72,"A":0.78,"A-":0.83,"B+":0.88,"B":0.92,"B-":0.95,"C+":1.00,"C":1.04,"C-":1.08,"D+":1.12,"D":1.16,"D-":1.20,"F":1.28};
+function gGrade(s){return GIF[s?.toUpperCase()]||"C"}
+function gMult(s){return GMULT[gGrade(s)]||1.04}
+function gColor(s){const g=gGrade(s);if(g.startsWith("A"))return B.green;if(g.startsWith("B"))return"#7fb3d3";if(g.startsWith("C"))return B.gold;if(g.startsWith("D"))return"#e67e22";return B.red}
+const BP={university:{r:65,l:"University/College",m:"Grievance, relationship violence"},nightclub_bar:{r:74,l:"Nightclub/Bar",m:"Conflict escalation, gang-related"},concert_venue:{r:68,l:"Concert/Event Venue",m:"Mass casualty targeting"},shopping_mall:{r:62,l:"Shopping Mall",m:"Robbery, domestic, grievance"},grocery_store:{r:55,l:"Grocery Store",m:"Robbery, domestic"},restaurant:{r:50,l:"Restaurant",m:"Robbery, domestic"},fast_food:{r:52,l:"Fast Food",m:"Robbery, conflict"},office_building:{r:58,l:"Office/Corporate",m:"Workplace grievance"},government_facility:{r:64,l:"Government Facility",m:"Anti-government, grievance"},hospital:{r:56,l:"Hospital/Medical",m:"Domestic, patient grievance"},clinic:{r:60,l:"Clinic/Medical Office",m:"Targeted, domestic"},hotel:{r:48,l:"Hotel/Resort",m:"Domestic, robbery"},casino:{r:45,l:"Casino/Gaming",m:"Robbery, financial dispute"},movie_theater:{r:55,l:"Movie Theater",m:"Mass casualty targeting"},fitness_gym:{r:38,l:"Fitness Center",m:"Domestic, grievance"},bank:{r:42,l:"Bank/Credit Union",m:"Robbery"},gas_station:{r:44,l:"Gas Station/C-Store",m:"Robbery"},warehouse_industrial:{r:54,l:"Warehouse/Industrial",m:"Workplace grievance"},daycare:{r:46,l:"Daycare/Child Care",m:"Custody dispute"},retail_store:{r:48,l:"Retail Store",m:"Robbery, grievance"},park_outdoor:{r:58,l:"Park/Outdoor",m:"Gang, domestic, random"},transit_station:{r:52,l:"Transit Station/Airport",m:"Ideological, domestic"},military_base:{r:50,l:"Military/LE Facility",m:"Insider threat, ideological"}};
+const DECL={k12_school:{code:"DECL-001",reason:"K-12 Schools",detail:"AmTrust E&S does not offer active shooter coverage for K-12 schools."},house_of_worship:{code:"DECL-002",reason:"Houses of Worship",detail:"AmTrust E&S does not offer active shooter coverage for houses of worship."}};
+const BTYPES=[{v:"house_of_worship",l:"House of Worship",d:true},{v:"k12_school",l:"K-12 School",d:true},{v:"university",l:"College/University"},{v:"nightclub_bar",l:"Nightclub/Bar"},{v:"concert_venue",l:"Concert/Event Venue"},{v:"shopping_mall",l:"Shopping Mall"},{v:"grocery_store",l:"Grocery Store"},{v:"restaurant",l:"Restaurant"},{v:"fast_food",l:"Fast Food"},{v:"office_building",l:"Office Building/Corporate"},{v:"government_facility",l:"Government Building/Courthouse"},{v:"hospital",l:"Hospital/Medical Center"},{v:"clinic",l:"Clinic/Medical Office"},{v:"hotel",l:"Hotel/Resort"},{v:"casino",l:"Casino/Gaming"},{v:"movie_theater",l:"Movie Theater"},{v:"fitness_gym",l:"Fitness Center/Gym"},{v:"bank",l:"Bank/Credit Union"},{v:"gas_station",l:"Gas Station/C-Store"},{v:"warehouse_industrial",l:"Warehouse/Industrial"},{v:"daycare",l:"Daycare/Child Care"},{v:"retail_store",l:"Retail Store"},{v:"park_outdoor",l:"Park/Outdoor Recreation"},{v:"transit_station",l:"Transit Station/Airport"},{v:"military_base",l:"Military/LE Facility"}];
+const OPS=[{id:"serves_liquor",l:"Sells or Serves Liquor",s:"Full bar, beer & wine, or packaged liquor",pts:12,icon:"🍺"},{id:"late_night",l:"Open Past Midnight",s:"Regular hours extend beyond 12:00 AM",pts:10,icon:"🌙"},{id:"sells_firearms",l:"Sells Firearms or Ammunition",s:"Licensed FFL dealer or on-premises gun sales",pts:18,icon:"🔫"},{id:"youthOriented",l:"Bar/Club Catering to Under-25",s:"College bars, 18+ venues, student-focused nightlife",pts:0,icon:"🚫",decl:true,only:"nightclub_bar"}];
+const SEC=[{id:"armed_guard",l:"Armed Security Guard(s)",pts:10},{id:"metal_detector",l:"Metal Detector/Weapon Screening",pts:9},{id:"bulletproof_glass",l:"Ballistic-Resistant Glass/Barriers",pts:7},{id:"access_control",l:"Access Control/Locked Entry",pts:6},{id:"active_shooter_training",l:"Active Shooter Response Training",pts:4},{id:"panic_button",l:"Panic Button/Silent Alarm",pts:4},{id:"cameras",l:"Security Camera System",pts:3},{id:"unarmed_guard",l:"Unarmed Security/Patrol",pts:3}];
+const LIMS=[{v:100000,s:"$100K",l:"$100,000",r:1.40},{v:250000,s:"$250K",l:"$250,000",r:1.20},{v:500000,s:"$500K",l:"$500,000",r:1.00},{v:1000000,s:"$1M",l:"$1,000,000",r:0.85}];
+function tier(s){if(s>=80)return{t:"CRITICAL",c:"#c0392b",bg:"rgba(192,57,43,0.08)",br:"rgba(192,57,43,0.3)"};if(s>=65)return{t:"HIGH",c:"#e67e22",bg:"rgba(230,126,34,0.08)",br:"rgba(230,126,34,0.3)"};if(s>=50)return{t:"ELEVATED",c:"#d4a017",bg:B.goldPale,br:B.borderGold};if(s>=35)return{t:"MODERATE",c:"#27ae60",bg:"rgba(39,174,96,0.08)",br:"rgba(39,174,96,0.3)"};return{t:"LOW",c:"#1a9e55",bg:"rgba(26,158,85,0.08)",br:"rgba(26,158,85,0.3)"}}
+function prems(score,cap){const cm={small:0.7,medium:1.0,large:1.6}[cap]||1;return LIMS.map(lim=>{const base=score*0.12*(lim.v/1000)*cm*lim.r;return{...lim,lo:Math.max(250,Math.round(base*0.85/50)*50),hi:Math.max(350,Math.round(base*1.20/50)*50)}})}
+function IS(){return{width:"100%",boxSizing:"border-box",background:"rgba(0,0,0,0.25)",border:`1px solid ${B.border}`,borderRadius:3,padding:"11px 14px",color:B.white,fontSize:14,outline:"none"}}
+function CS(){return{background:"rgba(0,0,0,0.2)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:4,padding:"20px 22px"}}
+function SL({children,badge}){return React.createElement('div',{style:{display:"flex",alignItems:"center",gap:10,marginBottom:18}},React.createElement('div',{style:{width:3,height:14,background:B.gold,borderRadius:1}}),React.createElement('span',{style:{fontSize:10,letterSpacing:3,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},children),badge&&React.createElement('span',{style:{fontSize:9,background:"rgba(200,150,12,0.2)",border:`1px solid ${B.borderGold}`,color:B.gold,padding:"2px 7px",borderRadius:20}},badge))}
+function Meter({score,color}){const r=52,circ=2*Math.PI*r,off=circ-(score/100)*circ;return React.createElement('div',{style:{position:"relative",width:136,height:136,flexShrink:0}},React.createElement('svg',{width:136,height:136,style:{transform:"rotate(-90deg)"}},React.createElement('circle',{cx:68,cy:68,r,fill:"none",stroke:"rgba(255,255,255,0.08)",strokeWidth:10}),React.createElement('circle',{cx:68,cy:68,r,fill:"none",stroke:color,strokeWidth:10,strokeLinecap:"round",strokeDasharray:circ,strokeDashoffset:off,style:{transition:"stroke-dashoffset 1.2s ease"}})),React.createElement('div',{style:{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}},React.createElement('span',{style:{color,fontSize:32,fontWeight:800,lineHeight:1}},score),React.createElement('span',{style:{color:"rgba(255,255,255,0.35)",fontSize:10,marginTop:2}},"/100")))}
+function Bar({label,value,max,color,sub,surcharge}){return React.createElement('div',{style:{marginBottom:13}},React.createElement('div',{style:{display:"flex",justifyContent:"space-between",marginBottom:5,alignItems:"baseline"}},React.createElement('div',null,React.createElement('span',{style:{color:"rgba(255,255,255,0.7)",fontSize:12}},label),sub&&React.createElement('span',{style:{color:"rgba(255,255,255,0.3)",fontSize:11,marginLeft:6}},sub)),React.createElement('div',{style:{display:"flex",alignItems:"center",gap:8}},surcharge>0&&React.createElement('span',{style:{color:"#e74c3c",fontSize:10,fontWeight:700}},`+${surcharge}pts`),React.createElement('span',{style:{color,fontSize:12,fontWeight:700}},`${value}/${max}`))),React.createElement('div',{style:{height:3,background:"rgba(255,255,255,0.07)",borderRadius:2}},React.createElement('div',{style:{height:"100%",width:`${Math.min(100,(value/max)*100)}%`,background:color,borderRadius:2,transition:"width 1.2s ease"}})))}
+function App(){
+  const[addr,setAddr]=useState("");
+  const[btype,setBtype]=useState("");
+  const[cap,setCap]=useState("medium");
+  const[lim,setLim]=useState(500000);
+  const[ops,setOps]=useState({});
+  const[sec,setSec]=useState([]);
+  const[loading,setLoading]=useState(false);
+  const[stage,setStage]=useState("");
+  const[result,setResult]=useState(null);
+  const[decl,setDecl]=useState(null);
+  const[err,setErr]=useState("");
+  const opSur=OPS.filter(f=>!f.decl&&ops[f.id]).reduce((s,f)=>s+f.pts,0);
+  const relOps=OPS.filter(f=>!f.only||f.only===btype);
+  async function callClaude(prompt,maxT=800){
+    const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,max_tokens:maxT})});
+    if(!res.ok)throw new Error(`API error ${res.status}`);
+    const d=await res.json();
+    return JSON.parse(d.text.replace(/```json|```/g,"").trim());
+  }
+  async function run(){
+    if(!btype||!addr.trim()){setErr("Please enter a full address and select a business type.");return}
+    setErr("");setLoading(true);setResult(null);setDecl(null);
+    if(DECL[btype]){setDecl(DECL[btype]);setLoading(false);return}
+    if(btype==="nightclub_bar"&&ops.youthOriented){setDecl({code:"DECL-003",reason:"Youth-Oriented Bar",detail:"AmTrust E&S does not offer coverage for bars/clubs catering primarily to under-25 patrons."});setLoading(false);return}
+    try{
+      setStage("Parsing address...");
+      const geo=await callClaude(`Parse this US address. Return ONLY valid JSON.\nAddress: "${addr}"\n{"lat":38.57,"lon":-94.87,"city":"Paola","state":"Kansas","stateAbbr":"KS","zip":"66071","county":"Miami County","neighborhood":"","valid":true}`);
+      setStage("Fetching demographics & proximity...");
+      const[cen,prx]=await Promise.all([
+        callClaude(`Estimate US Census ACS demographics for ZIP ${geo?.zip||""} (${geo?.city||addr}, ${geo?.stateAbbr||""}). Return ONLY valid JSON.\n{"medianHouseholdIncome":62000,"povertyRate":11,"unemploymentRate":4,"totalPopulation":8500}`),
+        callClaude(`Estimate number of each business type within 600m of address in ${geo?.city||addr}, ${geo?.stateAbbr||""}. Return ONLY valid JSON.\n{"bars":1,"liquorStores":0,"gunShops":0,"pawnShops":0,"policeStations":1,"transitStops":0}`)
+      ]);
+      setStage("Building neighborhood profile...");
+      const loc=await callClaude(`Neighborhood intelligence for insurance underwriting.\nAddress: "${addr}" | ${geo?.city||""}, ${geo?.stateAbbr||""} ${geo?.zip||""}\nCensus: median income $${cen?.medianHouseholdIncome}, poverty ${cen?.povertyRate}%, unemployment ${cen?.unemploymentRate}%\nNearby 600m: ${prx?.bars} bars, ${prx?.gunShops} gun shops, ${prx?.policeStations} police\nReturn ONLY valid JSON:\n{"populationDensity":"moderate","violentCrimeIndex":25,"gangActivity":"low","crimeTrend":"stable","urbanCharacter":"one sentence about this area"}`);
+      setStage("Computing risk score...");
+      const p=BP[btype];
+      const dM={"very high":1.18,"high":1.10,"moderate":1.0,"low":0.92,"very low":0.85}[loc?.populationDensity]||1.0;
+      const iM=cen?(cen.medianHouseholdIncome<35000?1.22:cen.medianHouseholdIncome<55000?1.12:cen.medianHouseholdIncome<75000?1.0:cen.medianHouseholdIncome<100000?0.92:0.84):1.0;
+      const pM=cen?(cen.povertyRate>30?1.18:cen.povertyRate>20?1.10:cen.povertyRate>12?1.02:cen.povertyRate>6?0.97:0.92):1.0;
+      const cM=0.7+((loc?.violentCrimeIndex||25)/100)*0.7;
+      const sM=gMult(geo?.stateAbbr);
+      const caM={small:0.82,medium:1.0,large:1.18}[cap]||1.0;
+      let osmB=0,osmL=[];
+      if(prx){
+        if(prx.bars>0){const p2=Math.min(prx.bars*2,8);osmB+=p2;osmL.push(`${prx.bars} bar(s) (+${p2}pts)`)}
+        if(prx.liquorStores>0){const p2=Math.min(prx.liquorStores,4);osmB+=p2;osmL.push(`${prx.liquorStores} liquor store(s) (+${p2}pts)`)}
+        if(prx.gunShops>0){const p2=Math.min(prx.gunShops*3,9);osmB+=p2;osmL.push(`${prx.gunShops} gun shop(s) (+${p2}pts)`)}
+        if(prx.pawnShops>0){const p2=Math.min(prx.pawnShops*2,6);osmB+=p2;osmL.push(`${prx.pawnShops} pawn shop(s) (+${p2}pts)`)}
+        if(prx.policeStations>0){const p2=-Math.min(prx.policeStations*4,8);osmB+=p2;osmL.push(`${prx.policeStations} police (${p2}pts)`)}
+      }
+      const secR=Math.min(sec.reduce((s,id)=>s+(SEC.find(x=>x.id===id)?.pts||0),0),30);
+      const activeOps=OPS.filter(f=>!f.decl&&ops[f.id]);
+      const base=Math.round(p.r*dM*iM*pM*cM*sM*caM+osmB);
+      const raw=Math.min(100,base+opSur);
+      const final=Math.max(5,raw-secR);
+      const T=tier(final);
+      const prs=prems(final,cap);
+      const grade=gGrade(geo?.stateAbbr);
+      const gc=gColor(geo?.stateAbbr);
+      setStage("Generating narrative...");
+      const narr=await callClaude(`Senior E&S underwriter at AmTrust. Active shooter risk assessment.\nLocation: ${addr} | Business: ${p.l} | Score: ${final}/100 ${T.t}\nCensus: income $${cen?.medianHouseholdIncome?.toLocaleString()}, poverty ${cen?.povertyRate}%, unemployment ${cen?.unemploymentRate}%\nProximity: ${prx?.bars} bars, ${prx?.gunShops} gun shops, ${prx?.policeStations} police\nGiffords (${geo?.stateAbbr}): ${grade} | Crime: ${loc?.violentCrimeIndex}/100 | ${loc?.urbanCharacter}\nOps: ${activeOps.map(f=>f.l).join(", ")||"None"} | Security: ${sec.join(", ")||"None"}\nReturn ONLY valid JSON:\n{"executiveSummary":"2-3 sentences","locationRisk":"1-2 sentences","dataInsight":"1-2 sentences","topRiskFactors":["f1","f2","f3"],"mitigating":["m1","m2"],"recommendations":["r1","r2","r3"],"coverageNote":"1 sentence"}`,1000);
+      setResult({final,raw,base:Math.min(100,base),secR,opSur,activeOps,T,p,prs,geo,cen,prx,grade,gc,osmL,loc,narr,
+        factors:{
+          bizBase:{label:"Business Type Base Risk",value:Math.round(p.r),max:100,color:B.gold,sub:p.l},
+          crime:{label:"Neighborhood Violent Crime",value:loc?.violentCrimeIndex||25,max:100,color:"#e67e22"},
+          density:{label:"Population Density",value:Math.round((dM-0.85)/(1.18-0.85)*40+10),max:50,color:"#e8b020"},
+          income:{label:cen?`Census Income ZIP ${geo?.zip}`:"Socioeconomic Est.",value:cen?Math.round((1.22-iM)/(1.22-0.84)*40):20,max:40,color:"#c8960c",sub:cen?`$${Math.round(cen.medianHouseholdIncome/1000)}k median`:"AI est."},
+          poverty:{label:cen?`Census Poverty ${cen?.povertyRate}%`:"Poverty Est.",value:cen?Math.min(40,Math.round(cen.povertyRate*1.2)):15,max:40,color:"#b8860b",sub:cen?"Census ACS":"AI est."},
+          stateLaw:{label:`State Gun Law (Giffords ${grade})`,value:Math.round((gMult(geo?.stateAbbr)-0.72)/(1.28-0.72)*30+5),max:35,color:gc,sub:`${geo?.stateAbbr||"?"} 2024`},
+          proximity:{label:"Proximity Factors",value:Math.min(25,Math.max(0,osmB+10)),max:25,color:"#9b59b6",sub:prx?`${prx.bars} bars, ${prx.gunShops} gun shops`:"AI est."},
+          occupancy:{label:"Occupancy Exposure",value:cap==="small"?20:cap==="medium"?35:50,max:50,color:"#7fb3d3"},
+          ...(activeOps.find(f=>f.id==="serves_liquor")?{liq:{label:"Liquor Sales/Service",value:12,max:20,color:"#e74c3c",surcharge:12}}:{}),
+          ...(activeOps.find(f=>f.id==="late_night")?{ln:{label:"Late Night Operations",value:10,max:20,color:"#e74c3c",surcharge:10}}:{}),
+          ...(activeOps.find(f=>f.id==="sells_firearms")?{fa:{label:"Firearms/Ammo Sales",value:18,max:20,color:"#e74c3c",surcharge:18}}:{}),
+          secCredit:{label:"Security Mitigation Credit",value:secR,max:30,color:B.green}
+        }
+      });
+    }catch(e){console.error(e);setErr("Analysis failed: "+e.message)}
+    finally{setLoading(false);setStage("")}
+  }
+  const R=result,Tr=R?.T,selP=R?.prs?.find(pp=>pp.v===lim);
+  const s=React.createElement;
+  return s('div',{style:{minHeight:"100vh",background:B.navyDark}},
+    s('div',{style:{background:B.navy,borderBottom:`3px solid ${B.gold}`}},
+      s('div',{style:{maxWidth:920,margin:"0 auto",padding:"14px 28px",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        s('svg',{width:220,height:40,viewBox:"0 0 220 40",fill:"none"},
+          s('text',{x:0,y:30,fontFamily:"Arial",fontWeight:900,fontSize:28,fill:B.gold},"Am"),
+          s('text',{x:40,y:30,fontFamily:"Arial",fontWeight:900,fontSize:28,fill:B.white},"Trust")
+        ),
+        s('div',{style:{textAlign:"right"}},
+          s('div',{style:{fontSize:13,fontWeight:700}},"Excess & Surplus Lines"),
+          s('div',{style:{fontSize:10,color:B.slateLight,letterSpacing:2,textTransform:"uppercase"}},"Active Shooter Risk Platform")
+        )
+      )
+    ),
+    s('div',{style:{maxWidth:920,margin:"0 auto",padding:"28px 28px 60px"}},
+      s('div',{style:{background:B.navy,border:"1px solid rgba(255,255,255,0.09)",borderRadius:4,padding:28,marginBottom:20}},
+        s(SL,null,"Risk Inputs"),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},"Full Street Address *"),
+          s('input',{value:addr,onChange:e=>setAddr(e.target.value),onKeyDown:e=>e.key==="Enter"&&!loading&&run(),placeholder:"e.g. 1 S Hedge Ln Rd, Paola, KS 66071",style:IS()})
+        ),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},"Business / Venue Type *"),
+          s('select',{value:btype,onChange:e=>{setBtype(e.target.value);setOps({});setDecl(null);setResult(null)},style:{...IS(),cursor:"pointer",appearance:"none"}},
+            s('option',{value:""},"Select business type..."),
+            ...BTYPES.map(t=>s('option',{key:t.v,value:t.v},t.d?`\u2298 ${t.l} \u2014 Not Eligible`:t.l))
+          )
+        ),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},"Occupancy / Venue Size"),
+          s('div',{style:{display:"flex",gap:10}},
+            ...[{v:"small",l:"Small",ss:"< 100"},{v:"medium",l:"Medium",ss:"100\u2013500"},{v:"large",l:"Large",ss:"> 500"}].map(o=>
+              s('button',{key:o.v,onClick:()=>setCap(o.v),style:{flex:1,padding:"12px 8px",cursor:"pointer",borderRadius:3,textAlign:"center",border:`1px solid ${cap===o.v?B.gold:"rgba(255,255,255,0.09)"}`,background:cap===o.v?B.goldPale:"rgba(0,0,0,0.2)",color:cap===o.v?B.gold:B.slateLight}},
+                s('div',{style:{fontSize:14,fontWeight:700,marginBottom:2}},o.l),
+                s('div',{style:{fontSize:11,opacity:0.7}},o.ss+" persons")
+              )
+            )
+          )
+        ),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},"Coverage Limit"),
+          s('div',{style:{display:"flex",gap:10}},
+            ...LIMS.map(l=>s('button',{key:l.v,onClick:()=>setLim(l.v),style:{flex:1,padding:"12px 8px",cursor:"pointer",borderRadius:3,textAlign:"center",border:`1px solid ${lim===l.v?B.gold:"rgba(255,255,255,0.09)"}`,background:lim===l.v?B.goldPale:"rgba(0,0,0,0.2)",color:lim===l.v?B.gold:B.slateLight}},
+              s('div',{style:{fontSize:15,fontWeight:800,marginBottom:2}},l.s),
+              s('div',{style:{fontSize:10,opacity:0.7}},l.l)
+            ))
+          )
+        ),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},
+            "Operational Risk Factors",
+            opSur>0&&s('span',{style:{marginLeft:10,color:B.red,fontSize:11,fontWeight:700}},`+${opSur} pts surcharge`)
+          ),
+          s('div',{style:{display:"grid",gap:8}},
+            ...relOps.map(f=>{const on=!!ops[f.id],isD=f.decl;return s('button',{key:f.id,onClick:()=>setOps(o=>({...o,[f.id]:!o[f.id]})),style:{padding:"12px 16px",textAlign:"left",cursor:"pointer",borderRadius:3,border:`1px solid ${on?(isD?B.redBorder:B.borderGold):"rgba(255,255,255,0.07)"}`,background:on?(isD?B.redPale:B.goldPale):"rgba(0,0,0,0.15)",color:on?(isD?B.red:B.gold):B.slateLight,display:"flex",alignItems:"center",gap:12}},
+              s('span',{style:{fontSize:20,flexShrink:0}},f.icon),
+              s('div',{style:{flex:1}},s('div',{style:{fontSize:13,fontWeight:on?700:400}},f.l),s('div',{style:{fontSize:11,opacity:0.65,marginTop:2}},f.s)),
+              s('div',{style:{fontSize:11,fontWeight:700,color:isD?(on?B.red:"rgba(255,255,255,0.25)"):(on?B.red:"rgba(255,255,255,0.22)")}},isD?(on?"\u2298 DECLINATION":"Triggers Declination"):`+${f.pts} pts`)
+            )})
+          )
+        ),
+        s('div',{style:{marginBottom:20}},
+          s('label',{style:{display:"block",marginBottom:7,fontSize:11,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700,color:B.slateLight}},"Existing Security Measures"),
+          s('div',{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},
+            ...SEC.map(o=>{const on=sec.includes(o.id);return s('button',{key:o.id,onClick:()=>setSec(sv=>sv.includes(o.id)?sv.filter(x=>x!==o.id):[...sv,o.id]),style:{padding:"10px 13px",textAlign:"left",cursor:"pointer",borderRadius:3,fontSize:12,border:`1px solid ${on?B.gold:"rgba(255,255,255,0.07)"}`,background:on?B.goldPale:"rgba(0,0,0,0.15)",color:on?B.gold:B.slateLight,display:"flex",alignItems:"center",gap:9}},
+              s('span',{style:{fontSize:14,flexShrink:0}},on?"\u2713":"\u25cb"),
+              s('span',{style:{flex:1}},o.l),
+              s('span',{style:{color:"rgba(255,255,255,0.22)",fontSize:10}},`-${o.pts}pts`)
+            )})
+          )
+        ),
+        err&&s('div',{style:{color:"#e74c3c",fontSize:12,marginTop:16,fontWeight:600}},"\u26a0 "+err),
+        s('button',{onClick:run,disabled:loading,style:{width:"100%",padding:15,marginTop:10,borderRadius:3,border:"none",background:loading?"rgba(200,150,12,0.3)":B.gold,color:loading?"rgba(255,255,255,0.4)":B.navyDark,cursor:loading?"not-allowed":"pointer",fontSize:13,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}},
+          loading?(stage||"Analyzing..."):"Generate Risk Assessment \u2192"
+        )
+      ),
+      decl&&s('div',{style:{background:B.redPale,border:`2px solid ${B.redBorder}`,borderRadius:4,padding:"32px 36px",marginBottom:16}},
+        s('div',{style:{display:"flex",gap:20,alignItems:"flex-start"}},
+          s('div',{style:{fontSize:40}},"\ud83d\udeab"),
+          s('div',null,
+            s('div',{style:{fontSize:9,letterSpacing:3,color:"rgba(255,255,255,0.4)",marginBottom:8,textTransform:"uppercase"}},"Coverage Decision \u00b7 "+decl.code),
+            s('h2',{style:{color:B.red,fontSize:22,fontWeight:800,margin:"0 0 12px"}},"Coverage Declined \u2014 "+decl.reason),
+            s('p',{style:{color:"rgba(255,255,255,0.7)",fontSize:14,lineHeight:1.7}},decl.detail)
+          )
+        )
+      ),
+      R&&s('div',null,
+        s('div',{style:{background:B.navy,border:`2px solid ${Tr.br}`,borderRadius:4,padding:"24px 28px",marginBottom:14,display:"flex",alignItems:"center",gap:28}},
+          s(Meter,{score:R.final,color:Tr.c}),
+          s('div',{style:{flex:1}},
+            s('div',{style:{fontSize:9,letterSpacing:3,color:B.slateLight,marginBottom:6,textTransform:"uppercase",fontWeight:700}},"AmTrust E&S \u00b7 Composite Risk Score"),
+            s('div',{style:{fontSize:24,fontWeight:800,color:Tr.c,marginBottom:8}},Tr.t+" RISK"),
+            s('div',{style:{color:"rgba(255,255,255,0.7)",fontSize:13,lineHeight:1.65}},R.narr?.executiveSummary),
+            s('div',{style:{marginTop:6,color:B.slate,fontSize:12,fontStyle:"italic"}},R.narr?.locationRisk)
+          )
+        ),
+        s('div',{style:{display:"grid",gridTemplateColumns:"1fr 1.6fr",gap:14,marginBottom:14}},
+          s('div',{style:CS()},
+            s(SL,null,"Score Breakdown"),
+            ...Object.values(R.factors).map((f,i)=>s(Bar,{key:i,label:f.label,value:f.value,max:f.max,color:f.color,sub:f.sub,surcharge:f.surcharge})),
+            s('div',{style:{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:10,marginTop:6,color:B.slate,fontSize:11}},`Base: ${R.base} + Ops: +${R.opSur} = Raw: ${R.raw} \u2192 Final: ${R.final}`)
+          ),
+          s('div',{style:CS()},
+            s(SL,null,"Annual Premium by Coverage Limit"),
+            s('div',{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}},
+              ...R.prs.map(pp=>{const sel=pp.v===lim;return s('button',{key:pp.v,onClick:()=>setLim(pp.v),style:{background:sel?B.goldPale:"rgba(0,0,0,0.25)",border:`2px solid ${sel?B.gold:"rgba(255,255,255,0.08)"}`,borderRadius:4,padding:"16px 12px",cursor:"pointer",textAlign:"center"}},
+                s('div',{style:{fontSize:10,letterSpacing:2,color:sel?B.gold:B.slateLight,textTransform:"uppercase",marginBottom:8,fontWeight:700}},pp.s),
+                s('div',{style:{fontSize:22,fontWeight:800,color:sel?B.gold:B.white,lineHeight:1,marginBottom:4}},"$"+pp.lo.toLocaleString()),
+                s('div',{style:{fontSize:11,color:B.slate,marginBottom:10}},"\u2013 $"+pp.hi.toLocaleString()+"/yr"),
+                sel&&s('div',{style:{fontSize:9,color:B.gold,letterSpacing:1.5,textTransform:"uppercase",fontWeight:700}},"\u2713 Selected")
+              )})
+            ),
+            selP&&s('div',{style:{marginTop:14,background:B.goldPale,border:`1px solid ${B.borderGold}`,borderRadius:3,padding:"8px 14px"}},
+              s('div',{style:{fontSize:9,color:B.gold,letterSpacing:2,textTransform:"uppercase",fontWeight:700,marginBottom:2}},"Selected Coverage"),
+              s('div',{style:{color:B.white,fontSize:13,fontWeight:600}},`${selP.l} \u2014 $${selP.lo.toLocaleString()} to $${selP.hi.toLocaleString()} / yr`)
+            ),
+            s('div',{style:{marginTop:10,color:B.slate,fontSize:11,lineHeight:1.6}},R.narr?.coverageNote)
+          )
+        ),
+        s('div',{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14}},
+          s('div',{style:CS()},
+            s(SL,null,"Risk Factors"),
+            s('div',{style:{fontSize:10,color:B.slate,marginBottom:10}},"Motive: "+R.p.m),
+            ...(R.narr?.topRiskFactors||[]).map((f,i)=>s('div',{key:i,style:{display:"flex",gap:9,marginBottom:10}},s('span',{style:{color:Tr.c,fontSize:12,marginTop:2,flexShrink:0}},"\u25b8"),s('span',{style:{color:"rgba(255,255,255,0.68)",fontSize:12,lineHeight:1.5}},f)))
+          ),
+          s('div',{style:CS()},
+            s(SL,null,"Mitigating Factors"),
+            (R.narr?.mitigating||[]).length>0?(R.narr.mitigating||[]).map((f,i)=>s('div',{key:i,style:{display:"flex",gap:9,marginBottom:10}},s('span',{style:{color:B.green,fontSize:12,marginTop:2,flexShrink:0}},"\u25c6"),s('span',{style:{color:"rgba(255,255,255,0.68)",fontSize:12,lineHeight:1.5}},f))):s('div',{style:{color:B.slate,fontSize:12}},"No significant mitigating factors.")
+          ),
+          s('div',{style:CS()},
+            s(SL,null,"Underwriter Recommendations"),
+            ...(R.narr?.recommendations||[]).map((r,i)=>s('div',{key:i,style:{display:"flex",gap:9,marginBottom:10}},s('span',{style:{color:"#7fb3d3",fontSize:12,marginTop:2,flexShrink:0}},"\u2192"),s('span',{style:{color:"rgba(255,255,255,0.68)",fontSize:12,lineHeight:1.5}},r)))
+          )
+        ),
+        s('div',{style:{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:18}},
+          s('p',{style:{color:B.slate,fontSize:11,lineHeight:1.8,margin:0}},"This tool provides illustrative actuarial estimates for underwriting guidance only. Risk scores and premium indications must not be the sole basis for coverage decisions. Final premiums must be determined by a licensed E&S underwriter. AmTrust Financial Services, Inc. \u00b7 Excess & Surplus Lines Division.")
+        )
+      )
+    ),
+    s('div',{style:{background:B.navy,borderTop:`3px solid ${B.gold}`,padding:"16px 28px"}},
+      s('div',{style:{maxWidth:920,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        s('div',{style:{fontSize:11,color:B.slate}},"\u00a9 "+new Date().getFullYear()+" AmTrust Financial Services, Inc. \u00b7 All rights reserved."),
+        s('div',{style:{display:"flex",gap:20,fontSize:11,color:B.slate}},s('span',null,"E&S Lines"),s('span',null,"\u00b7"),s('span',null,"AM Best Rated A\u2212"))
+      )
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
